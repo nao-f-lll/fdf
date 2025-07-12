@@ -1,50 +1,43 @@
-NAME        := fdf
-LIBS        := ft mlx
-LIBS_TARGET := libft/libft.a \
-               mlx/mlx.a
-INCS        := libft \
-               mlx
+CC      = cc
+CFLAGS  = -Wall -Wextra -Werror -g
 
-SRCS        := main.c     \
-               color.c    \
-               node.c     \
-               map.c      \
-               fdf.c      \
-               line.c     \
-               pixel.c    \
-               dnode.c    \
-               renders.c  \
-               inputs.c
+NAME    = fdf
+SRCS    = main.c color.c node.c map.c fdf.c line.c pixel.c dnode.c renders.c inputs.c
+OBJS    = $(SRCS:.c=.o)
 
-BUILD_DIR   := .build
-OBJS        := $(SRCS:%.c=$(BUILD_DIR)/%.o)
+LIBFT_DIR = ./libft
+MLX_DIR   = ./mlx
 
-CC          := cc
-CFLAGS      := -Wall -Wextra -Werror
-CPPFLAGS    := $(INCS:%=-I%)
-LDFLAGS     := $(addprefix -L,$(dir $(LIBS_TARGET))) -L /opt/X11/lib
-LDLIBS      := $(addprefix -l,$(LIBS)) -lX11 -lXext
+LIBFT     = $(LIBFT_DIR)/libft.a
+MLX       = $(MLX_DIR)/mlx.a
 
-RM          := rm -f
-MAKEFLAGS   += --silent --no-print-directory
+INCS      = -I$(LIBFT_DIR) -I$(MLX_DIR)
+LDFLAGS   = -L$(LIBFT_DIR) -L$(MLX_DIR) -L/opt/X11/lib
+LDLIBS    = -lft -lmlx -lX11 -lXext
 
 all: $(NAME)
 
-$(LIBS_TARGET):
-	$(MAKE) -C $(@D)
+$(NAME): $(OBJS) $(LIBFT) $(MLX)
+	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) $(LDLIBS) -o $(NAME)
 
-$(BUILD_DIR)/%.o: %.c
-	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+$(LIBFT):
+	make -C $(LIBFT_DIR)
 
-$(NAME): $(LIBS_TARGET) $(OBJS)
-	$(CC) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $(NAME)
+$(MLX):
+	make -C $(MLX_DIR) > /dev/null
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
 
 clean:
-	$(RM) $(OBJS)
+	rm -f $(OBJS)
+	make -C $(LIBFT_DIR) clean
+	make -C $(MLX_DIR) clean > /dev/null
 
 fclean: clean
-	$(RM) $(NAME)
+	rm -f $(NAME)
+	make -C $(LIBFT_DIR) fclean
+	make -C $(MLX_DIR) clean > /dev/null
 
 re: fclean all
 
